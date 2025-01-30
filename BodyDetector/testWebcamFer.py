@@ -10,9 +10,10 @@ def init_video(): #function to read from video
         ret, frame = cap.read()
         if not ret: 
             break
-        pose3D.getImageLandMarks(frame)
-        world = pose3D.getWordLandMark(frame)
-        print('\n',world)
+        pose3D.setImage(frame)
+        image = pose3D.getImageLandMarks()
+        world = pose3D.getWordLandMark()
+        #print('\n',world)
         #v2.imshow("Output", frame)
         if cv2.waitKey(1) & 0xFF == ord('q'): 
             break 
@@ -22,7 +23,8 @@ def init_video(): #function to read from video
 
 def init_image(): #function to read image for debuggin
     img = cv2.imread('andre.jpeg')
-    pose3D_ = BodyDetector.pose3d(cv2.resize(img, (500, 600)))
+    pose3D_ = BodyDetector.pose3d()
+    pose3D_.setImage(cv2.resize(img, (500, 600)))
     #pose3D = BodyDetector.pose3d(img)
     image_pts = pose3D_.getImageLandMarks()
     world_pts = pose3D_.getWordLandMark()
@@ -32,5 +34,5 @@ def init_image(): #function to read image for debuggin
     cv2.destroyAllWindows()
 
 if __name__ == '__main__':
-    init_video() 
-    #init_image()
+    #init_video() #change for the use you want
+    init_image()
