@@ -75,12 +75,17 @@ class pose3d():
     
     def getGlobalPose(self):
         success, rvec, tvec = cv2.solvePnP(self.world_landmarks_arr, self.img_landmarks_arr, self.mtx, self.dist, flags=cv2.SOLVEPNP_SQPNP)
-        self.transformation_mtx_init[0:3,3] = tvec.squeeze()
-        world_points_hom = np.concatenate((self.world_landmarks_arr, np.ones((33,1))), axis = 1)
-        global_points = world_points_hom.dot(np.linalg.inv(self.transformation_mtx_init).T)
-        self.plotCamera_3Dpose(global_points)
+        rot_matrix,_ = cv2.Rodrigues(rvec)
 
-        print('\n', global_points) 
+        self.transformation_mtx_init[0:3,3] = tvec.squeeze()
+        self.transformation_mtx_init[0:3, 0:3] = rot_matrix
+        world_points_hom = np.concatenate((self.world_landmarks_arr, np.ones((33,1))), axis = 1)
+        #global_points = world_points_hom.dot(np.linalg.inv(self.transformation_mtx_init).T)
+        global_points_hom = world_points_hom @ self.transformation_mtx_init.T
+        self.plotCamera_3Dpose(global_points_hom)
+        np.set_printoptions(suppress=True, precision=4)
+
+        print('\n', global_points_hom) 
         
     def plotCamera_3Dpose(self, global_points): 
         self.ax2.clear()
