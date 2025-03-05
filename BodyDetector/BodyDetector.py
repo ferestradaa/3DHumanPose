@@ -12,9 +12,9 @@ class pose3d():
         self.pose = self.mp_pose.Pose()
 
         plt.ion()
-        self.fig_3dpose = plt.figure()
+        #self.fig_3dpose = plt.figure()
         self.fig_3dCamera = plt.figure()
-        self.ax = self.fig_3dpose.add_subplot(111,projection='3d')
+        #self.ax = self.fig_3dpose.add_subplot(111,projection='3d')
         self.ax2 = self.fig_3dCamera.add_subplot(111,projection='3d')
         plt.show(block=False) 
 
@@ -66,49 +66,75 @@ class pose3d():
             for i, landmark in enumerate(results.pose_world_landmarks.landmark): 
                 landmark_name = self.mp_pose.PoseLandmark(i).name
                 self.world_detected_landmarks[landmark_name] = (landmark.x, landmark.y, landmark.z)
-            #self.visualize3Dpose(self.world_detected_landmarks)
 
+            #self.visualize3Dpose(self.world_detected_landmarks)
             self.world_landmarks_arr = np.array(list(self.world_detected_landmarks.values()))
             self.getGlobalPose()
             return self.world_detected_landmarks
         return None
     
-    def getGlobalPose(self):
+    
+    def getGlobalPose(self): #esta funcion utiliza las coordenadas de la imagen y las del mundo que lanza mediapipe
         success, rvec, tvec = cv2.solvePnP(self.world_landmarks_arr, self.img_landmarks_arr, self.mtx, self.dist, flags=cv2.SOLVEPNP_SQPNP)
         rot_matrix,_ = cv2.Rodrigues(rvec)
 
-        self.transformation_mtx_init[0:3,3] = tvec.squeeze()
-        self.transformation_mtx_init[0:3, 0:3] = rot_matrix
-        world_points_hom = np.concatenate((self.world_landmarks_arr, np.ones((33,1))), axis = 1)
+        self.transformation_mtx_init[0:3,3] = tvec.squeeze() #asignar traslacion a matriz de transofmracion 
+        self.transformation_mtx_init[0:3, 0:3] = rot_matrix #asignar rotacion a matriz de transformacion
+        world_points_hom = np.concatenate((self.world_landmarks_arr, np.ones((33,1))), axis = 1) #convertir a coordenadas homogeneras las coordenadas de mediapipe
         #global_points = world_points_hom.dot(np.linalg.inv(self.transformation_mtx_init).T)
-        global_points_hom = world_points_hom @ self.transformation_mtx_init.T
+        global_points_hom = world_points_hom @ self.transformation_mtx_init.T #se hace la transformaicon de las coordenadas homogeneas de mediapipe a la matriz de trasnformaicon del sistema de la camara
+        global_points_hom[:,1] *= -1 #invertir el eje Y 
+        
+
         self.plotCamera_3Dpose(global_points_hom)
         np.set_printoptions(suppress=True, precision=4)
 
+        root = np.array([
+            (global_points_hom[24][0] + global_points_hom[25][0]) / 2,
+            (global_points_hom[24][1] + global_points_hom[25][1]) / 2, #this is Z 
+            (global_points_hom[24][2] + global_points_hom[25][2]) / 2 #this is Y (UP)
+        ])
+
+        root2 = np.array([
+                (global_points_hom[12][0] + global_points_hom[11][0]) / 2,
+                (global_points_hom[12][1] + global_points_hom[11][1]) / 2, #this is Z 
+                (global_points_hom[12][2] + global_points_hom[11][2]) / 2 #this is Y (UP)
+            ])
+
+
         print('\n', global_points_hom) 
+        print('\n', root) #hips
+        print('\n', root2) ##
         
+
+
     def plotCamera_3Dpose(self, global_points): 
-        self.ax2.clear()
+        self.ax2.cla()
+        #x, y, z = global_points[:, 0], -global_points[:,1], -global_points[:,2]
         x, y, z = global_points[:, 0], global_points[:,1], global_points[:,2]
 
         for part in self.full_body: 
             for item in part: 
                 self.ax2.plot([x[item[0]], x[item[1]]], [y[item[0]], y[item[1]]], [z[item[0]], z[item[1]]])
 
-        self.ax2.set_xlim(-5, 5) #limitis for xyz axis
-        self.ax2.set_ylim(0, 2)  
-        self.ax2.set_zlim(-5, 5) 
+        self.ax2.set_title('camera coordinates')
+        self.ax2.set_xlim3d(-2, 2) #limitis for xyz axis
+        self.ax2.set_ylim3d(-1, 2)  
+        self.ax2.set_zlim3d(-4, 4) 
         self.ax2.set_xlabel('X')
         self.ax2.set_ylabel('Y')
         self.ax2.set_zlabel('Z')
-        self.ax2.view_init(elev=-65, azim=-90)
+        #self.ax2.view_init(elev=-65, azim=-0)A
+
+        self.ax2.scatter(0,0,0)
   
         plt.draw()
-        plt.pause(0.02)
-
+        plt.pause(0.0001)
+        #plt.show(block=False)
+        
 
     def visualize3Dpose(self, detected_landmarks): 
-        self.ax.clear()
+        self.ax.cla()
        
         x = [coordinate[0] for coordinate in detected_landmarks.values()]
         y = [coordinate[1] for coordinate in detected_landmarks.values()]
@@ -118,13 +144,14 @@ class pose3d():
             for item in part: 
                 self.ax.plot([x[item[0]], x[item[1]]], [y[item[0]], y[item[1]]], [z[item[0]], z[item[1]]])
 
-        self.ax.set_xlim(-1, 1) #limitis for xyz axis
-        self.ax.set_ylim(-1, 1)  
-        self.ax.set_zlim(-1, 1) 
+        self.ax.set_title('Mediapipe coordinates')
+        self.ax.set_xlim3d(-1, 1) #limitis for xyz axis
+        self.ax.set_ylim3d(-1, 1)  
+        self.ax.set_zlim3d(-1, 1) 
         self.ax.set_xlabel('X')
         self.ax.set_ylabel('Y')
         self.ax.set_zlabel('Z')
-        self.ax.view_init(elev=-65, azim=-90)
+        #self.ax.view_init(elev=-65, azim=-90)
   
         plt.draw()
-        plt.pause(0.02)
+        plt.pause(0.0001)
