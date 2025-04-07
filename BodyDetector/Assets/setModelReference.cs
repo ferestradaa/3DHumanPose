@@ -22,7 +22,6 @@ public class setModelReference : MonoBehaviour {
     private List<Transform> bodyPartsList = new List<Transform>();
     private List<Transform> bodyPartsAux = new List<Transform>();
 
-    // Ejemplo de mapeo para segmentos del avatar
     private Dictionary<string, int> avatarMapping = new Dictionary<string, int> {
         { "shoulderL", 0 },    // shoulderL -> forearmL
         { "forearmL", 1 },     // forearmL -> handL
@@ -34,8 +33,7 @@ public class setModelReference : MonoBehaviour {
         { "lowerLegR", 10 }    // lowerLegR -> footR
     };
 
-    void Awake() {
-        // Asigna los transforms en el orden correcto
+    void Awake() { //listas de huesos en forma relevante
         bodyPartsList = new List<Transform> {
             shoulderL, forearmL, handL,
             shoulderR, forearmR, handR,
@@ -69,9 +67,7 @@ public class setModelReference : MonoBehaviour {
     public List<Vector3> getAvatarTposeDirections() => avatarDirections;
     public List<Quaternion> getOffsets() => offset;
 
-    // Asigna posiciones de los landmarks en orden (asegúrate del orden correcto)
     List<Vector3> SetBodyPositions() {
-            // Si el orden es importante, considera usar una lista en lugar de un Dictionary
             List<Vector3> bodyPositionsOrdered = new List<Vector3> {
                 new Vector3(0.1773f,  0.2844f,  3.2182f), // leftShoulderPos
                 new Vector3(0.3894f,  0.2464f,  3.2300f), // leftElbowPos
@@ -121,8 +117,7 @@ public class setModelReference : MonoBehaviour {
                 int prev = indices[i - 1];
                 int curr = indices[i];
                 Vector3 diff = (bodyPositionsOrdered[curr] - bodyPositionsOrdered[prev]).normalized;
-                // Si es un segmento de brazo, invertir el vector
-                if(segment.Key == "leftArm" || segment.Key == "rightArm") {
+                if(segment.Key == "leftArm" || segment.Key == "rightArm") { //invertir el orden en caso de ser lado derecho
                     diff = -diff;
                 }
                 directions.Add(diff);
