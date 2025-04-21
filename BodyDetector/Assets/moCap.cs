@@ -5,7 +5,7 @@ using System.Linq;
 
 public class motionCapture : MonoBehaviour{
 
-// Transforms asignados en el inspector
+//transfomrs en el inspector
     public Transform shoulderL, forearmL, handL, shoulderR, forearmR, handR;
     public Transform upperLegL, lowerLegL, footL, upperLegR, lowerLegR, footR;
     public Transform hip;
@@ -32,7 +32,7 @@ public class motionCapture : MonoBehaviour{
     
 
     void Start(){
-        referenceModel = GetComponent<setModelReference>(); // Buscar en el mismo GameObject
+        referenceModel = GetComponent<setModelReference>(); //ejecucion manual para depurar
 
         if (referenceModel != null){
             referenceModel.Execute(); 
