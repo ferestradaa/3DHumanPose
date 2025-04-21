@@ -18,7 +18,6 @@ public class setModelReference : MonoBehaviour {
     //List to get actual frame pose 
     private List<Vector3> actualPose = new List<Vector3>(); 
 
-    // Listas de Transforms en orden (importante para cálculos)
     private List<Transform> bodyPartsList = new List<Transform>();
     private List<Transform> bodyPartsAux = new List<Transform>();
 
