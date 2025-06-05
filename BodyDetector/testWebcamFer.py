@@ -22,7 +22,7 @@ def init_video(): #function to read from video
     cv2.destroyAllWindows()
 
 def init_image(): #function to read image for debuggin
-    img = cv2.imread('andre.jpeg')
+    img = cv2.imread('img.jpeg')
     pose3D_ = BodyDetector.pose3d()
     pose3D_.setImage(cv2.resize(img, (500, 600)))
     #pose3D = BodyDetector.pose3d(img)
